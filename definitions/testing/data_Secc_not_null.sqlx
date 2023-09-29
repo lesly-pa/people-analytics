@@ -1,0 +1,7 @@
+config { type: "assertion" }
+
+with cuantos as(
+select count(*) c from ${ref("tbl_data_seccion")}
+)
+select * from cuantos
+where c = 0

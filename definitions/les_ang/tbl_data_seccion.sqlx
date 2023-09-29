@@ -3,6 +3,10 @@ config {
   schema: "les_ang",
   tags: ["seccion"],
   description: "Datos de promedios mensuales de sección por tienda",
+  assertions:
+  {
+    nonNull: ["ubi_ceco", "cve_secc","cluster"]
+  }
   
   }
 
@@ -12,11 +16,11 @@ config {
     cast (main.Vta_Total_SM as integer) vta_total_sm,cast (main.Piezas_Total as integer)piezas_total,
     cast(main.Comision_Total_SM as integer) comision_total_sm,
     coalesce(tic.num_bol,main.Num_Tickets) as tickets --unir los tickes del 2021 de num_bol y los de los demas años en una misma columna
-  from  ${ref("personal")} as main
+  from  ${ref("tbl_personal_acumulado")} as main
     left join (
       select 
         anio,mes,num_per,cve_Secc,cast (num_bol as INTEGER) as num_bol 
-      from `peppy-webbing-240017.Tablero_Personal.Tbl_Score_Ventas` 
+      from ${ref("Tbl_Score_Ventas")} 
         where anio = '2021') as tic
     on cast(tic.anio as INTEGER) = main.anio 
       and cast(right(tic.mes,2) as INTEGER) = main.mes 
@@ -56,7 +60,7 @@ clus as(
 from prom
 inner join
   (
-  select ubi_ceco, mapped_cluster from `peppy-webbing-240017.les_ang.liverpool_clusters`
+  select ubi_ceco, mapped_cluster from ${ref("liverpool_clusters")}
   ) as c
     on lpad(cast(c.ubi_ceco as string),4,'0')  = prom.ubi_ceco
 )
@@ -65,6 +69,6 @@ select
   clus.*,a.arn 
 from clus
 left join
-  (select ubi_ceco,cve_Secc,arn from `peppy-webbing-240017.les_ang.tbl_arn_seccion` )as a
+  (select ubi_ceco,cve_Secc,arn from ${ref("tbl_arn_seccion")} )as a
 on  lpad(cast(a.ubi_ceco as string),4,'0')  = clus.ubi_ceco
 and lpad(cast(a.cve_Secc as string),4,'0') = clus.cve_Secc

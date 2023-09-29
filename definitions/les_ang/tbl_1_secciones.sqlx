@@ -1,0 +1,12 @@
+config {
+  type: "table",
+  schema: "les_ang",
+  tags: ["seccion","tasa_crecimiento"],
+  description: "Datos de los promedios mensuales de sección por tienda de las secciones con mejor tasa de crecimiento ",
+  dependencies:["data_Secc_not_null"]
+
+  }
+  select * from ${ref("tbl_data_seccion")} as main
+  inner join
+  (SELECT * FROM ${ref("evolucion_secc_growth_rate")} where ranking=1) as r
+on r.ubi_ceco = main.ubi_Ceco and r.cve_Secc =main.cve_Secc
