@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "peppy-webbing-240017",
+  schema: "Tablero_Personal",
+  name: "tbl_personal_acumulado",
+  description: "raw personal table"
+}

@@ -1,0 +1,74 @@
+config {
+  type: "table",
+  schema: "les_ang",
+  tags: ["seccion"],
+  description: "Datos de promedios mensuales de sección por tienda",
+  assertions:
+  {
+    nonNull: ["ubi_ceco", "cve_secc","cluster"]
+  }
+  
+  }
+
+  with tabla_limpia as (
+  select 
+    main.anio,main.mes,main.ubi_ceco,main.Txt_Ubi_CeCo,main.cve_secc,main.num_per,
+    cast (main.Vta_Total_SM as integer) vta_total_sm,cast (main.Piezas_Total as integer)piezas_total,
+    cast(main.Comision_Total_SM as integer) comision_total_sm,
+    coalesce(tic.num_bol,main.Num_Tickets) as tickets --unir los tickes del 2021 de num_bol y los de los demas años en una misma columna
+  from  ${ref("tbl_personal_acumulado")} as main
+    left join (
+      select 
+        anio,mes,num_per,cve_Secc,cast (num_bol as INTEGER) as num_bol 
+      from ${ref("Tbl_Score_Ventas")} 
+        where anio = '2021') as tic
+    on cast(tic.anio as INTEGER) = main.anio 
+      and cast(right(tic.mes,2) as INTEGER) = main.mes 
+      and tic.num_per = main.num_per 
+      and tic.cve_secc = main.cve_Secc
+
+  where main.Ar_Per in ('1V','2V')
+    and main.Jerarquia not in ('09 Eventual No Ventas')
+    and main.mes <10
+    and main.anio >= 2021
+    and main.vta_total_sm >0
+    and main.cve_Secc is not null
+    and main.ubi_ceco is not null
+    and main.negocio = 'LIVERPOOL'
+    and (NOT (REGEXP_CONTAINS(txt_ubi_Ceco, r'^C&C') OR REGEXP_CONTAINS(txt_ubi_Ceco, r'EXPRESS')))
+), 
+sum_mes as(
+  select 
+    anio,mes,ubi_ceco,txt_ubi_ceco,cve_Secc,count(num_per) as vendedores, 
+    sum(tabla_limpia.vta_total_sm) vta_total_sm, sum(tabla_limpia.comision_total_sm) comision_total_sm,
+    sum(tabla_limpia.piezas_total) piezas_total, sum(tabla_limpia.tickets) tickets
+  from tabla_limpia
+  group by anio,mes,ubi_ceco,txt_ubi_ceco,cve_Secc
+),
+prom as(
+  select 
+    ubi_ceco,txt_ubi_ceco,cve_secc,cast(avg(vendedores) as integer) as vendedores_prom ,
+    cast(avg(vta_total_sm) as integer) vta_prom,
+    cast(avg(comision_total_sm) as integer) comision_prom,
+    cast(avg(tickets) as integer) tickets_prom,cast(avg(piezas_total) as integer) piezas_prom
+  from sum_mes
+  group by cve_Secc,ubi_ceco,txt_ubi_ceco
+), 
+clus as(
+ select 
+  c.mapped_cluster as cluster,prom.*
+from prom
+inner join
+  (
+  select ubi_ceco, mapped_cluster from ${ref("liverpool_clusters")}
+  ) as c
+    on lpad(cast(c.ubi_ceco as string),4,'0')  = prom.ubi_ceco
+)
+
+select 
+  clus.*,a.arn 
+from clus
+left join
+  (select ubi_ceco,cve_Secc,arn from ${ref("tbl_arn_seccion")} )as a
+on  lpad(cast(a.ubi_ceco as string),4,'0')  = clus.ubi_ceco
+and lpad(cast(a.cve_Secc as string),4,'0') = clus.cve_Secc

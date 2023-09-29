@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "peppy-webbing-240017",
+  schema: "Tablero_Personal",
+  name: "Tbl_Score_Ventas",
+  description: "raw score table"
+}

@@ -1,0 +1,7 @@
+config { type: "assertion" }
+
+select 
+    ubi_ceco,cve_Secc, count( distinct cve_secc) as c
+from ${ref("tbl_data_seccion")}
+group by ubi_ceco,cve_Secc
+having c > 1

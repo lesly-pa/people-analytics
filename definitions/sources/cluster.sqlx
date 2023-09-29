@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "peppy-webbing-240017",
+  schema: "les_ang",
+  name: "liverpool_clusters",
+  description: "raw clusters table"
+}

@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "peppy-webbing-240017",
+  schema: "les_ang",
+  name: "tbl_arn_seccion",
+  description: "raw arn table"
+}

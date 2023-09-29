@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "peppy-webbing-240017",
+  schema: "les_ang",
+  name: "evolucion_secc_growth_rate",
+  description: "Section's growth rate view"
+}
