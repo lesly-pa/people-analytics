@@ -15,7 +15,8 @@ config {
     main.anio,main.mes,main.ubi_ceco,main.Txt_Ubi_CeCo,main.cve_secc,main.num_per,
     cast (main.Vta_Total_SM as integer) vta_total_sm,cast (main.Piezas_Total as integer)piezas_total,
     cast(main.Comision_Total_SM as integer) comision_total_sm,
-    coalesce(tic.num_bol,main.Num_Tickets) as tickets --unir los tickes del 2021 de num_bol y los de los demas años en una misma columna
+    coalesce(tic.num_bol,main.Num_Tickets) as tickets, --unir los tickes del 2021 de num_bol y los de los demas años en una misma columna
+    max(cast(if(main.mes<10,concat (main.anio,0,main.mes),concat(main.anio,main.mes)) as integer) ) over (partition by main.Cve_Secc,main.Ubi_CeCo) as ultimo_mes 
   from  ${ref("tbl_personal_acumulado")} as main
     left join (
       select 
