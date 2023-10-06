@@ -1,0 +1,23 @@
+config {
+  type: "table",
+  schema: "les_ang",
+  tags: ["time_series"],
+  description: "Datos de venta mensual de sección por tienda",
+  assertions:
+  {
+    nonNull: ["ubi_ceco", "cve_secc"],
+    rowConditions: ['"fecha" > "2021-01-01"']
+  }
+  
+  }
+with vivas as(
+  select 
+    max(mes) over (partition by ubi_ceco,cve_Secc)
+  from ${ref('tbl_Ventas_Total')}
+)
+
+  select 
+    cast(cast(mes AS STRING) as DATE FORMAT 'YYYYMM') as fecha,
+    ubi_Ceco,cve_secc,sum(vta_total_sm) as vta_mensual
+  from ${ref('tbl_Ventas_Total')}
+  group by cve_Secc,ubi_Ceco,fecha
