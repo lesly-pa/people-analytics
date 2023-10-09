@@ -1,0 +1,14 @@
+config { type: "assertion" }
+
+with muertas as(
+  select 
+    ubi_ceco,cve_secc,max(mes) as existe
+  from ${ref('tbl_Ventas_Total')}
+  where negocio = 'LIVERPOOL'
+  and (NOT (REGEXP_CONTAINS(txt_ubi_Ceco, r'^C&C') OR REGEXP_CONTAINS(txt_ubi_Ceco, r'EXPRESS')))
+  group by ubi_Ceco,cve_Secc
+  having existe < 202307 
+)
+select v.* from ${ref('tbl_vta_mensual')} as v
+inner join muertas 
+    on muertas.ubi_ceco=v.ubi_Ceco and muertas.cve_Secc=v.cve_Secc
