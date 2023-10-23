@@ -31,7 +31,7 @@ monthly_vta as(
   group by cve_Secc,ubi_Ceco,mes
   
 
-)
+)  
 select 
   cast(cast(monthly_vta.mes AS STRING) as DATE FORMAT 'YYYYMM') as fecha,
   monthly_vta.* except (mes)
