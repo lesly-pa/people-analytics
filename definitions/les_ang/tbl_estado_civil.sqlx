@@ -1,0 +1,52 @@
+config {
+    type: "table",
+    schema: "les_ang",
+    tags: ["Edo_civil"],
+    description: "Estado civil mas reciente de cada colaborador que ha estado activo",
+    assertions: {
+        nonNull: ["num_per", "est_civ", "deno_Est_civ"],
+        uniqueKey: ['num_per']
+    }
+
+}
+
+WITH
+  tabla_limpia AS(
+  SELECT
+    anio,
+    mes,
+    num_per,
+    est_civ,
+    deno_Est_civ
+  FROM
+    ${ref('tbl_personal_acumulado')}
+  WHERE
+    estatus NOT IN('Baja') ),
+  reciente AS(
+  SELECT
+    num_per,
+    MAX(CAST(
+      IF
+        (mes<10,concat (anio,
+            0,
+            mes),CONCAT(anio,mes)) AS integer)) AS fecha_reciente,
+  FROM
+    ${ref('tbl_personal_acumulado')}
+  WHERE
+    Deno_Est_Civ IS NOT NULL
+  GROUP BY
+    num_per)
+
+SELECT
+  reciente.num_per,
+  tabla_limpia.est_civ,
+  tabla_limpia.deno_est_Civ
+FROM
+  reciente
+LEFT JOIN
+  tabla_limpia
+ON
+  reciente.num_per = tabla_limpia.num_per
+  AND reciente.fecha_reciente = CAST(
+  IF
+    (tabla_limpia.mes<10,CONCAT (tabla_limpia.anio,0,tabla_limpia.mes), CONCAT(tabla_limpia.anio,tabla_limpia.mes)) AS integer)

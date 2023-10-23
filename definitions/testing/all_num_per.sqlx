@@ -1,0 +1,22 @@
+config {
+    type: "assertion"
+}
+
+WITH
+  vivos AS(
+  SELECT
+    DISTINCT num_per
+  FROM
+    ${ref("tbl_personal_acumulado")}
+  WHERE
+    est_civ IS NOT NULL )
+SELECT
+  *
+FROM
+  vivos
+WHERE
+  num_per NOT IN (
+  SELECT
+    num_per
+  FROM
+    ${ref('tbl_estado_civil')})
