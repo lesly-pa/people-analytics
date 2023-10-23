@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "peppy-webbing-240017",
+  schema: "Tablero_Personal",
+  name: "tbl_Ventas_Total",
+  description: "raw ventas total table"
+}

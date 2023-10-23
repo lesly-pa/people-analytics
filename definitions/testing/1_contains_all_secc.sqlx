@@ -3,11 +3,19 @@ config { type: "assertion" }
 with tabla as(
     select distinct 
         m.cve_secc,s.c 
+<<<<<<< HEAD
+    from ${ref('tbl_data_seccion')} as m
+left join (
+    select 
+        cve_Secc,count(cve_secc) as c 
+    from ${ref('tbl_1_secciones')}
+=======
     from ${ref("tbl_data_seccion")} as m
 left join (
     select 
         cve_Secc,count(cve_secc) as c 
     from ${ref("tbl_1_secciones")}
+>>>>>>> refs/heads/main
     group by cve_Secc
 ) as s
     on s.cve_secc = m.cve_Secc

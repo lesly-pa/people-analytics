@@ -1,0 +1,42 @@
+config {
+  type: "table",
+  schema: "les_ang",
+  tags: ["time_series"],
+  description: "Datos de venta mensual de sección por tienda",
+  assertions:
+  {
+    nonNull: ["ubi_ceco", "cve_secc","2021-01-01"],
+    rowConditions: ['"fecha" >= "2021-05-01"']
+  }
+  
+  }
+
+with vivas as(
+  select 
+    ubi_ceco,cve_secc,max(mes) as existe
+  from ${ref('tbl_Ventas_Total')}
+  where negocio = 'LIVERPOOL'
+  and (NOT (REGEXP_CONTAINS(txt_ubi_Ceco, r'^C&C') OR REGEXP_CONTAINS(txt_ubi_Ceco, r'EXPRESS')))
+  group by ubi_Ceco,cve_Secc
+  having existe >= 202307
+  
+),
+monthly_vta as(
+  select 
+    mes,
+    ubi_Ceco,cve_secc,sum(vta_total_sm) as vta_mensual
+  from ${ref('tbl_Ventas_Total')}
+  where negocio = 'LIVERPOOL'
+  and (NOT (REGEXP_CONTAINS(txt_ubi_Ceco, r'^C&C') OR REGEXP_CONTAINS(txt_ubi_Ceco, r'EXPRESS')))
+  group by cve_Secc,ubi_Ceco,mes
+  
+
+)  
+select 
+  cast(cast(monthly_vta.mes AS STRING) as DATE FORMAT 'YYYYMM') as fecha,
+  monthly_vta.* except (mes)
+from monthly_vta
+  inner join vivas 
+    on vivas.ubi_Ceco = monthly_vta.ubi_Ceco 
+    and vivas.cve_Secc=monthly_vta.cve_Secc
+
